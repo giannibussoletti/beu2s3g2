@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -19,10 +20,12 @@ import java.util.UUID;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder bcrypt;
 
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder bcrypt) {
         this.userRepository = userRepository;
+        this.bcrypt = bcrypt;
 
     }
 
@@ -32,7 +35,7 @@ public class UserService {
             throw new BadRequestException("L'email " + payload.mail() + " esiste già");
 //        2. TODO: Ulteriori controlli
 //        3. Creo il nuovo oggetto User leggendo i valori dal payload
-        User newUser = new User(payload.name(), payload.surname(), payload.password(), payload.mail(), payload.birthDate());
+        User newUser = new User(payload.name(), payload.surname(), this.bcrypt.encode(payload.password()), payload.mail(), payload.birthDate());
 //        4. Salviamo il nuovo utente
         return this.userRepository.save(newUser);
     }

@@ -1,0 +1,50 @@
+Spring security 2
+Autorizzazione 
+
+Per poter iniziare ad utilizzare l'autorizzazione, gli user devono essere conformi ad uno standard, implementando una interfaccia chiamata UserDetails. Questa cosa permetterà di creare dei meccanismi per gestire le autorizzazioni dei vari endpoint.
+Nella classe di configurazione va messa una annotazione in più: @EnableMethodSecurity
+Si usa l'annotazione @PreAuthorize 
+
+
+Step uno aggiungo i ruoi all'utente e implemento userDetails
+
+Step due @EnableMethodSecurity in config class
+
+Step tre faccio l'aggiornamento del filtro con il securityfilter
+
+Vado a cercare l'id dell'user tramite token facendo un parse
+
+Una volta trovato collego l'utente a quella sessione e faccio
+
+Step quattro per ogni end poi a capire cosa voglio fare, quindi chi può accedere ad un certo tipo di end point.
+
+Per il singolo utente non si usa un path con userid ma con /me e si vanno a creare dei nuovi endpoint solo per l'utente
+
+
+PASSWORD HASHING
+
+Differenza tra Encryption e Hashing
+
+Encription = Scambio di dati end to end in cui solo gli utenti che comunicano tra di loro possono decriptare i dati che si passano
+
+Hashing = Non prevede la funzione di Dehashing, non si può decodificare un Hash
+
+Gli Hash si utilizzano come controllo dell'integrità dei dati, lo stesso input darà sempre lo stesso output, questo è anche il suo punto più debole essendo un metodo deterministico.
+
+
+Va usato un Salted Hash, che toglie il determinismo. Uno molto usato è Bcrypt.
+Ogni nuovo Hash sarà diverso dal precedente. Aggiunge una parte random all' hash.
+Per rendere il tutto ancora più sicuro si usa una generazione chiamata Cost Factor che rigenera l'hash un 2 alla y, per esempio un 2 alla 15esima, che è anche un buon punto di sicurezza
+
+
+
+Come collegare un front end ed iun backend
+
+
+CORS
+I broswer hanno un comportamento di default, diverso da per esempio postman. 
+Il comportamento di un broswer vede se il link della pagina è lo stesso a cui stiamo mandando la richiesta, se è così manda la richiesta altrimenti la blocca. Si chiama: Same-Origin Policy.
+
+Per risolvere questo problema vanno effettuate chiamate Cross-Origin Resource Sharing (CORS).
+
+Dobbiamo impostare un Header HTTP in cui si va a creare una white list che va a dire al broswer quali link sono utilizzabili

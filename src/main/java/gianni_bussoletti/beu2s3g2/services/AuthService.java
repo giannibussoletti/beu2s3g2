@@ -4,6 +4,7 @@ import gianni_bussoletti.beu2s3g2.entities.User;
 import gianni_bussoletti.beu2s3g2.exceptions.UnauthorizedException;
 import gianni_bussoletti.beu2s3g2.payloads.LoginDTO;
 import gianni_bussoletti.beu2s3g2.security.JWTTools;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,10 +12,12 @@ public class AuthService {
 
     private final UserService userService;
     private final JWTTools jwtTools;
+    private final PasswordEncoder bcrypt;
 
-    public AuthService(UserService userService, JWTTools jwtTools) {
+    public AuthService(UserService userService, JWTTools jwtTools, PasswordEncoder bcrypt) {
         this.userService = userService;
         this.jwtTools = jwtTools;
+        this.bcrypt = bcrypt;
     }
 
 
@@ -23,7 +26,7 @@ public class AuthService {
         // 1.1 Controllo se l'email esiste
         User found = this.userService.findByMail(body.email());
         // 1.2 Controllare se le password corrispondono
-        if (found.getPassword().equals(body.password())) {
+        if (this.bcrypt.matches(body.password(), found.getPassword())) {
             // 2. Se è tutto è OK generiamo una Access Token per l'utente e lo ritorniamo
             return this.jwtTools.generatedToken(found);
 // TODO migliorare gestione password.

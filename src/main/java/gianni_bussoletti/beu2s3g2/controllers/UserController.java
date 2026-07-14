@@ -1,20 +1,15 @@
 package gianni_bussoletti.beu2s3g2.controllers;
 
 import gianni_bussoletti.beu2s3g2.entities.User;
-import gianni_bussoletti.beu2s3g2.exceptions.ValidationException;
 import gianni_bussoletti.beu2s3g2.payloads.PasswordUpdateDTO;
-import gianni_bussoletti.beu2s3g2.payloads.UserDTO;
-import gianni_bussoletti.beu2s3g2.payloads.UserResponseDTO;
 import gianni_bussoletti.beu2s3g2.payloads.UserUpdateDTO;
 import gianni_bussoletti.beu2s3g2.services.UserService;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,20 +21,26 @@ public class UserController {
         this.userService = userService;
     }
 
-    //    1. POST http://localhost:PORT/users (+req.body) --> 201
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-//    @Validated serve per dire all'applicazione che quel Payload deve essere validato
-    public UserResponseDTO saveUSer(@RequestBody @Validated UserDTO body, BindingResult validation) {
-        if (validation.hasErrors()) {
-            List<String> errorsMessage = validation.getFieldErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
-            throw new ValidationException(errorsMessage);
-        }
-        User saved = this.userService.save(body);
-        return new UserResponseDTO(saved.getId());
+
+    // Questi metodi non hanno bisogno di un USER ID perché usano il Context Principle sono collegati direttamente all'utente loggato
+    @GetMapping("/me")
+    public User getOwnProfile(@AuthenticationPrincipal User AuthUser) {
+        return AuthUser;
     }
 
+    @PutMapping("/me")
+    public User updateOwnProfile(@AuthenticationPrincipal User AuthUser, @RequestBody UserUpdateDTO body) {
+        return this.userService.findByIdAndUpdate(AuthUser.getId(), body);
+    }
+
+    @DeleteMapping("/me")
+    public void deleteOwnProfile(@AuthenticationPrincipal User AuthUser) {
+        this.userService.findByIdAndDelete(AuthUser.getId());
+    }
+
+
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
     public Page<User> getUsers(@RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "5") int size,
                                @RequestParam(defaultValue = "name") String orderBy) {
